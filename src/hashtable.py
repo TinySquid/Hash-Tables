@@ -7,88 +7,106 @@ class LinkedPair:
         self.value = value
         self.next = None
 
+
 class HashTable:
-    '''
-    A hash table that with `capacity` buckets
+    """
+    A hash table that has `capacity` buckets
     that accepts string keys
-    '''
+    """
+
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
+        self.count = 0  # Number of buckets used in the hash table
         self.storage = [None] * capacity
 
-
     def _hash(self, key):
-        '''
+        """
         Hash an arbitrary key and return an integer.
 
         You may replace the Python hash with DJB2 as a stretch goal.
-        '''
+        """
         return hash(key)
 
-
     def _hash_djb2(self, key):
-        '''
+        """
         Hash an arbitrary key using DJB2 hash
 
         OPTIONAL STRETCH: Research and implement DJB2
-        '''
+        """
         pass
-
 
     def _hash_mod(self, key):
-        '''
+        """
         Take an arbitrary key and return a valid integer index
         within the storage capacity of the hash table.
-        '''
+        """
         return self._hash(key) % self.capacity
 
-
     def insert(self, key, value):
-        '''
+        """
         Store the value with the given key.
+        """
+        # TODO Check if structure needs to be resized
 
-        # Part 1: Hash collisions should be handled with an error warning. (Think about and
-        # investigate the impact this will have on the tests)
+        hashed_key = self._hash_mod(key)
 
-        # Part 2: Change this so that hash collisions are handled with Linked List Chaining.
-
-        Fill this in.
-        '''
-        pass
-
-
+        if self.storage[hashed_key]:
+            # hashed key already exists, find last node in linked list and add new node
+            node = self.storage[hashed_key]
+            while node.next:
+                node = node.next
+            # Add new node
+            node.next = LinkedPair(key, value)
+            # self.count += 1
+        else:
+            self.storage[hashed_key] = LinkedPair(key, value)
+            self.count += 1
 
     def remove(self, key):
-        '''
+        """
         Remove the value stored with the given key.
 
         Print a warning if the key is not found.
 
         Fill this in.
-        '''
+        """
         pass
 
-
     def retrieve(self, key):
-        '''
+        """
         Retrieve the value stored with the given key.
 
         Returns None if the key is not found.
 
         Fill this in.
-        '''
-        pass
+        """
 
+        hashed_key = self._hash_mod(key)
+
+        if self.storage[hashed_key]:
+            # Key exists, check if list has more than 1 node
+            if self.storage[hashed_key].next:
+                # Find matching key and return its value
+                node = self.storage[hashed_key]
+                while node:
+                    if node.key == key:
+                        return node.value
+                    node = node.next
+            else:
+                # Only item in list
+                return self.storage[hashed_key].value
+        else:
+            # Key not found
+            return None
 
     def resize(self):
-        '''
+        """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
 
         Fill this in.
-        '''
+        """
         pass
-
 
 
 if __name__ == "__main__":
