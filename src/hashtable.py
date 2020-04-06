@@ -48,16 +48,34 @@ class HashTable:
         """
         # TODO Check if structure needs to be resized
 
+        # Possibilities
+        # 1. Key already exists
+        # 2. Key already exists and first node does not match key
+        # 3. Key does not exist
+
         hashed_key = self._hash_mod(key)
 
         if self.storage[hashed_key]:
-            # hashed key already exists, find last node in linked list and add new node
+            # hashed key already exists
             node = self.storage[hashed_key]
-            while node.next:
-                node = node.next
-            # Add new node
-            node.next = LinkedPair(key, value)
-            # self.count += 1
+
+            if node.key == key:
+                # Update value of existing key
+                node.value = value
+            else:
+                # Traverse linked list to find matching key
+                # Append new node if not found
+                while node.next:
+                    # Move to next node in list
+                    node = node.next
+                    if node.key == key:
+                        # Update value of existing key
+                        node.value = value
+                        break
+
+                # Add new node since we didn't find matching key above
+                node.next = LinkedPair(key, value)
+                self.count += 1
         else:
             self.storage[hashed_key] = LinkedPair(key, value)
             self.count += 1
@@ -67,8 +85,6 @@ class HashTable:
         Remove the value stored with the given key.
 
         Print a warning if the key is not found.
-
-        Fill this in.
         """
 
         hashed_key = self._hash_mod(key)
@@ -124,48 +140,27 @@ class HashTable:
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
-
-        Fill this in.
         """
-        pass
+        new_capacity = self.capacity * 2
 
+        # Create temp hash table with doubled capacity
+        temp_hash_table = HashTable(new_capacity)
 
-if __name__ == "__main__":
-    ht = HashTable(2)
+        # Unpack existing table and re-hash + insert into new table
+        for bucket in self.storage:
+            if bucket:
+                # Bucket has key/value pair
+                if bucket.next:
+                    # Bucket has more than 1 node attached
+                    node = bucket
 
-    ht.insert("yeet", "vegetal")
-    ht.insert("yate", "burder")
+                    # traverse linked list and insert nodes into temp table
+                    while node:
+                        temp_hash_table.insert(node.key, node.value)
+                        node = node.next
+                else:
+                    temp_hash_table.insert(bucket.key, bucket.value)
 
-    print(ht.storage)
-
-    print(ht.retrieve("yate"))
-
-    ht.remove("yate")
-
-    print(ht.retrieve("yate"))
-    print(ht.retrieve("yeet"))
-
-    # ht.insert("line_1", "Tiny hash table")
-    # ht.insert("line_2", "Filled beyond capacity")
-    # ht.insert("line_3", "Linked list saves the day!")
-
-    # print("")
-
-    # # Test storing beyond capacity
-    # print(ht.retrieve("line_1"))
-    # print(ht.retrieve("line_2"))
-    # print(ht.retrieve("line_3"))
-
-    # # Test resizing
-    # old_capacity = len(ht.storage)
-    # ht.resize()
-    # new_capacity = len(ht.storage)
-
-    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
-
-    # # Test if data intact after resizing
-    # print(ht.retrieve("line_1"))
-    # print(ht.retrieve("line_2"))
-    # print(ht.retrieve("line_3"))
-
-    # print("")
+        # Overwrite old self.storage with self.storage from new table
+        self.capacity = new_capacity
+        self.storage = temp_hash_table.storage
