@@ -70,33 +70,54 @@ class HashTable:
 
         Fill this in.
         """
-        pass
+
+        hashed_key = self._hash_mod(key)
+
+        if self.storage[hashed_key]:
+            # Key exists, check if list has more than 1 node
+            if self.storage[hashed_key].key == key:
+                self.storage[hashed_key] = None
+            else:
+                # Find key and remove it
+                node = self.storage[hashed_key]
+
+                while node.next:
+                    if node.next.key == key:
+                        node.next = None
+                    else:
+                        node = node.next
+        else:
+            # Key not found
+            print("Key not found")
 
     def retrieve(self, key):
         """
         Retrieve the value stored with the given key.
 
         Returns None if the key is not found.
-
-        Fill this in.
         """
 
         hashed_key = self._hash_mod(key)
 
         if self.storage[hashed_key]:
-            # Key exists, check if list has more than 1 node
-            if self.storage[hashed_key].next:
-                # Find matching key and return its value
-                node = self.storage[hashed_key]
-                while node:
-                    if node.key == key:
-                        return node.value
-                    node = node.next
-            else:
-                # Only item in list
+            # Key is valid index
+            if self.storage[hashed_key].key == key:
+                # Key provided matches node key, return value
                 return self.storage[hashed_key].value
+            else:
+                # Next pointer is another node, search for matching key in list
+                if self.storage[hashed_key].next:
+                    # Find matching key and return its value
+                    node = self.storage[hashed_key]
+                    while node:
+                        if node.key == key:
+                            return node.value
+                        node = node.next
+                else:
+                    # While the hashed key matched a valid bucket, the key itself wasn't found in any key/value pair
+                    return None
         else:
-            # Key not found
+            # Hashed key does not map to a bucket
             return None
 
     def resize(self):
@@ -112,27 +133,39 @@ class HashTable:
 if __name__ == "__main__":
     ht = HashTable(2)
 
-    ht.insert("line_1", "Tiny hash table")
-    ht.insert("line_2", "Filled beyond capacity")
-    ht.insert("line_3", "Linked list saves the day!")
+    ht.insert("yeet", "vegetal")
+    ht.insert("yate", "burder")
 
-    print("")
+    print(ht.storage)
 
-    # Test storing beyond capacity
-    print(ht.retrieve("line_1"))
-    print(ht.retrieve("line_2"))
-    print(ht.retrieve("line_3"))
+    print(ht.retrieve("yate"))
 
-    # Test resizing
-    old_capacity = len(ht.storage)
-    ht.resize()
-    new_capacity = len(ht.storage)
+    ht.remove("yate")
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(ht.retrieve("yate"))
+    print(ht.retrieve("yeet"))
 
-    # Test if data intact after resizing
-    print(ht.retrieve("line_1"))
-    print(ht.retrieve("line_2"))
-    print(ht.retrieve("line_3"))
+    # ht.insert("line_1", "Tiny hash table")
+    # ht.insert("line_2", "Filled beyond capacity")
+    # ht.insert("line_3", "Linked list saves the day!")
 
-    print("")
+    # print("")
+
+    # # Test storing beyond capacity
+    # print(ht.retrieve("line_1"))
+    # print(ht.retrieve("line_2"))
+    # print(ht.retrieve("line_3"))
+
+    # # Test resizing
+    # old_capacity = len(ht.storage)
+    # ht.resize()
+    # new_capacity = len(ht.storage)
+
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+
+    # # Test if data intact after resizing
+    # print(ht.retrieve("line_1"))
+    # print(ht.retrieve("line_2"))
+    # print(ht.retrieve("line_3"))
+
+    # print("")
