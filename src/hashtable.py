@@ -17,6 +17,10 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
         self.count = 0  # Number of buckets used in the hash table
+
+        # For shrinking only when current size above initial size
+        self.initial_size = capacity
+
         self.storage = [None] * capacity
 
     def _hash(self, key):
@@ -46,7 +50,6 @@ class HashTable:
         """
         Store the value with the given key.
         """
-        # TODO Check if structure needs to be resized
 
         # Possibilities
         # 1. Key already exists
@@ -80,6 +83,10 @@ class HashTable:
             self.storage[hashed_key] = LinkedPair(key, value)
             self.count += 1
 
+        # Will resize hash table based on usage factor
+        if self.count / self.capacity > 0.7:
+            self.resize(direction=1)
+
     def remove(self, key):
         """
         Remove the value stored with the given key.
@@ -90,21 +97,29 @@ class HashTable:
         hashed_key = self._hash_mod(key)
 
         if self.storage[hashed_key]:
-            # Key exists, check if list has more than 1 node
+            # Key exists, check first node if it matches provided string key
             if self.storage[hashed_key].key == key:
                 self.storage[hashed_key] = None
+                self.count -= 1
             else:
                 # Find key and remove it
                 node = self.storage[hashed_key]
 
                 while node.next:
                     if node.next.key == key:
+                        # Key found, remove reference
                         node.next = None
+                        self.count -= 1
                     else:
                         node = node.next
         else:
             # Key not found
             print("Key not found")
+
+        # Will resize hash table based on usage factor
+        # From README: "This should only occur if the HashTable has been resized past the initial size."
+        if self.count / self.capacity < 0.2 and self.capacity > self.initial_size:
+            self.resize(direction=-1)
 
     def retrieve(self, key):
         """
@@ -136,12 +151,18 @@ class HashTable:
             # Hashed key does not map to a bucket
             return None
 
-    def resize(self):
+    def resize(self, direction=1):
         """
-        Doubles the capacity of the hash table and
-        rehash all key/value pairs.
+        Doubles/Halves the capacity of the hash table and
+        rehashes all key/value pairs.
         """
-        new_capacity = self.capacity * 2
+
+        if direction == 1:
+            # Increase size
+            new_capacity = self.capacity * 2
+        else:
+            # Decrease size
+            new_capacity = self.capacity // 2
 
         # Create temp hash table with doubled capacity
         temp_hash_table = HashTable(new_capacity)
@@ -160,6 +181,8 @@ class HashTable:
                         node = node.next
                 else:
                     temp_hash_table.insert(bucket.key, bucket.value)
+
+        # print(f"Resized table from {self.capacity} to {new_capacity}")
 
         # Overwrite old self.storage with self.storage from new table
         self.capacity = new_capacity
